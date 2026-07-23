@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      PORT: 3000
+      JWT_SECRET: insightboard-prod-secret
+      DB_PATH: /app/data/insightboard.db
+      AUTO_SEED_ON_BOOT: 'true'
+    volumes:
+      - sqlite_data:/app/data
+    ports:
+      - '${BACKEND_PORT:-3100}:3000'
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:${BACKEND_PORT:-3100}/api
+    ports:
+      - '${FRONTEND_PORT:-5173}:80'
+    depends_on:
+      - backend
+
+volumes:
+  sqlite_data:

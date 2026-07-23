@@ -1,0 +1,26 @@
+{
+  "name": "insightboard-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.4.1",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "sqlite3"
+    ]
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "seed": "pnpm --filter insightboard-backend seed",
+    "test": "pnpm -r test",
+    "test:e2e": "playwright test",
+    "test:e2e:trace": "playwright test --trace on"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.51.1"
+  }
+}

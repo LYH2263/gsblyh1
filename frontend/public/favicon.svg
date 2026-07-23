@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="insightboard-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB" />
+      <stop offset="1" stop-color="#0891B2" />
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="52" height="52" rx="16" fill="url(#insightboard-gradient)" />
+  <path d="M20 42V24" stroke="white" stroke-width="6" stroke-linecap="round" />
+  <path d="M32 42V18" stroke="white" stroke-width="6" stroke-linecap="round" />
+  <path d="M44 42V30" stroke="white" stroke-width="6" stroke-linecap="round" />
+  <path d="M18 44H46" stroke="white" stroke-width="5" stroke-linecap="round" opacity="0.85" />
+</svg>

@@ -1,0 +1,13 @@
+node_modules
+dist
+coverage
+.DS_Store
+*.log
+backend/data/*.db
+playwright-report
+test-results
+
+# 本地题目与对话记录
+题目.md
+题目/
+对话/
