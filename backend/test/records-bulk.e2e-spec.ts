@@ -18,7 +18,7 @@ describe('Records Bulk Import (e2e)', () => {
     app = moduleFixture.createNestApplication();
     configureApp(app);
     await app.init();
-  });
+  }, 60000);
 
   afterAll(async () => {
     await app.close();

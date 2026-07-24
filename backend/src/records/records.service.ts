@@ -110,11 +110,26 @@ export class RecordsService {
     }
 
     const entities: Omit<RecordEntity, 'id' | 'createdAt' | 'dataset'>[] = [];
+    const lenient = dto.lenient === true;
 
     payloadLines.forEach((line, index) => {
       const [date, category, amountRaw, region, channel] = line
         .split(',')
         .map((item) => item.trim());
+
+      // 宽松模式：允许缺失/异常数据入库，交给巡检工作台发现与修复
+      if (lenient) {
+        const amount = Number(amountRaw);
+        entities.push({
+          datasetId,
+          date: date ?? '',
+          category: category ?? '',
+          amount: Number.isFinite(amount) ? amount : 0,
+          region: region ?? '',
+          channel: channel ?? ''
+        });
+        return;
+      }
 
       if (!date || !category || !amountRaw || !region || !channel) {
         throw new BadRequestException(`第 ${index + 1} 行 CSV 格式无效`);

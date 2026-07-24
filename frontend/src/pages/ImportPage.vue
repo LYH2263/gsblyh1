@@ -44,9 +44,13 @@
             :rows="12"
             placeholder="date,category,amount,region,channel"
           />
+          <el-checkbox v-model="lenient" class="lenient-check">
+            宽松导入（允许含质量问题的数据入库，便于后续巡检修复）
+          </el-checkbox>
           <el-space class="bulk-actions" wrap>
             <el-button type="primary" @click="submitBulk">导入数据</el-button>
             <el-button @click="goDashboard">查看仪表盘</el-button>
+            <el-button @click="goInspection">数据质量巡检</el-button>
           </el-space>
         </SectionCard>
       </el-col>
@@ -77,6 +81,7 @@ const recordForm = reactive({
 });
 
 const csvText = ref('');
+const lenient = ref(false);
 
 const submitRecord = async () => {
   if (!recordForm.date || !recordForm.category || !recordForm.region || !recordForm.channel) {
@@ -101,13 +106,17 @@ const submitBulk = async () => {
     return;
   }
 
-  const result = await recordStore.bulkImport(datasetId.value, csvText.value);
+  const result = await recordStore.bulkImport(datasetId.value, csvText.value, lenient.value);
   ElMessage.success(`导入成功，共 ${result.insertedCount} 条`);
   csvText.value = '';
 };
 
 const goDashboard = () => {
   router.push(`/app/datasets/${datasetId.value}/dashboard`);
+};
+
+const goInspection = () => {
+  router.push(`/app/datasets/${datasetId.value}/inspection`);
 };
 </script>
 
@@ -131,6 +140,10 @@ const goDashboard = () => {
 }
 
 .bulk-actions {
+  margin-top: var(--space-3);
+}
+
+.lenient-check {
   margin-top: var(--space-3);
 }
 

@@ -81,11 +81,15 @@ const navItems = computed(() => {
   const explorePath = currentDatasetId.value
     ? `/app/datasets/${currentDatasetId.value}/explore`
     : '/app/datasets';
+  const inspectionPath = currentDatasetId.value
+    ? `/app/datasets/${currentDatasetId.value}/inspection`
+    : '/app/datasets';
 
   return [
     { label: '数据集', to: '/app/datasets', match: 'exact' as const },
     { label: '仪表盘', to: dashboardPath, match: 'dashboard' as const },
     { label: '数据探索', to: explorePath, match: 'explore' as const },
+    { label: '质量巡检', to: inspectionPath, match: 'inspection' as const },
     { label: '设置', to: '/app/settings', match: 'settings' as const }
   ];
 });
@@ -99,6 +103,8 @@ const isNavActive = (item: { to: string; match: string }) => {
       return path.endsWith('/dashboard');
     case 'explore':
       return path.endsWith('/explore');
+    case 'inspection':
+      return path.endsWith('/inspection');
     case 'settings':
       return path.startsWith('/app/settings');
     default:

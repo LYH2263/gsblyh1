@@ -39,6 +39,10 @@ const router = createRouter({
           component: () => import('@/pages/ExplorePage.vue')
         },
         {
+          path: 'datasets/:id/inspection',
+          component: () => import('@/pages/InspectionPage.vue')
+        },
+        {
           path: 'settings',
           component: () => import('@/pages/SettingsPage.vue')
         }

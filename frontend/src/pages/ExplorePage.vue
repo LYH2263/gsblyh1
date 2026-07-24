@@ -25,7 +25,31 @@
         </el-form-item>
       </el-form>
 
-      <el-table class="explore-table" :data="recordStore.records" v-loading="recordStore.loading" border>
+      <el-alert
+        v-if="issueRecordIds.size > 0"
+        class="issue-hint"
+        type="warning"
+        :closable="false"
+        show-icon
+      >
+        最新巡检报告中仍有 {{ issueRecordIds.size }} 条问题记录，下表中的问题行已标记。
+        <el-link type="primary" :underline="false" @click="goInspection">前往修复</el-link>
+      </el-alert>
+
+      <el-table
+        class="explore-table"
+        :data="recordStore.records"
+        v-loading="recordStore.loading"
+        border
+        :row-class-name="rowClassName"
+      >
+        <el-table-column label="" width="60">
+          <template #default="{ row }">
+            <el-tooltip v-if="issueRecordIds.has(row.id)" content="该记录存在数据质量问题" placement="top">
+              <el-tag type="warning" size="small" effect="dark">!</el-tag>
+            </el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column prop="date" label="日期" width="132" />
         <el-table-column prop="category" label="分类" min-width="120" />
         <el-table-column prop="region" label="地区" min-width="120" />
@@ -50,17 +74,40 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PageHeaderBar from '@/components/ui/PageHeaderBar.vue';
 import SectionCard from '@/components/ui/SectionCard.vue';
 import { useRecordStore } from '@/stores/records';
+import { inspectionsApi } from '@/api/inspections';
+import type { RecordItem } from '@/types/models';
 
 const route = useRoute();
 const router = useRouter();
 const recordStore = useRecordStore();
 
 const datasetId = computed(() => Number(route.params.id));
+
+const issueRecordIds = ref<Set<number>>(new Set());
+
+const rowClassName = ({ row }: { row: RecordItem }) =>
+  issueRecordIds.value.has(row.id) ? 'issue-row' : '';
+
+const loadIssueMarks = async () => {
+  if (!datasetId.value) {
+    return;
+  }
+  try {
+    const report = await inspectionsApi.getLatestReport(datasetId.value);
+    issueRecordIds.value = new Set(report?.issueRecordIds ?? []);
+  } catch {
+    issueRecordIds.value = new Set();
+  }
+};
+
+const goInspection = () => {
+  router.push(`/app/datasets/${datasetId.value}/inspection`);
+};
 
 const filters = reactive({
   from: (route.query.from as string) || '',
@@ -87,7 +134,10 @@ const load = async (page = 1, pageSize = recordStore.filters.pageSize) => {
 };
 
 onMounted(async () => {
-  await load(Number(route.query.page ?? 1), Number(route.query.pageSize ?? 10));
+  await Promise.all([
+    load(Number(route.query.page ?? 1), Number(route.query.pageSize ?? 10)),
+    loadIssueMarks()
+  ]);
 });
 
 const applyFilters = async () => {
@@ -133,5 +183,13 @@ const goDashboard = () => {
 .explore-filter,
 .explore-table {
   margin-top: var(--space-4);
+}
+
+.issue-hint {
+  margin-top: var(--space-4);
+}
+
+.explore-table :deep(.issue-row) {
+  background: color-mix(in srgb, #f59e0b 12%, var(--surface-card));
 }
 </style>
