@@ -7,17 +7,23 @@ import {
   DEFAULT_SEED_PASSWORD,
   DEFAULT_SEED_USERNAME,
   MARKETING_DATASET_NAME,
+  QUALITY_DATASET_NAME,
   SALES_DATASET_NAME,
   marketingRecords,
+  qualityRecords,
   salesRecords,
   seedWithDataSource
 } from './scripts/seed-utils';
 import { User } from './users/user.entity';
+import { QualityTask } from './quality/quality-task.entity';
+import { QualityReport } from './quality/quality-report.entity';
+import { QualityIssue } from './quality/quality-issue.entity';
 
 const TRUTHY_VALUES = new Set(['1', 'true', 'yes', 'on']);
 const DEMO_DATASET_COUNTS = new Map([
   [SALES_DATASET_NAME, salesRecords.length],
-  [MARKETING_DATASET_NAME, marketingRecords.length]
+  [MARKETING_DATASET_NAME, marketingRecords.length],
+  [QUALITY_DATASET_NAME, qualityRecords.length]
 ]);
 
 export const shouldAutoSeedOnBoot = (rawValue?: string, nodeEnv = process.env.NODE_ENV): boolean => {
@@ -104,7 +110,7 @@ export async function ensureDemoSeededOnBoot(options: {
   const dataSource = new DataSource({
     type: 'sqlite',
     database: dbPath,
-    entities: [User, Dataset, RecordEntity],
+    entities: [User, Dataset, RecordEntity, QualityTask, QualityReport, QualityIssue],
     synchronize: true
   });
 

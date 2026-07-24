@@ -3,12 +3,17 @@ import { DataSource } from 'typeorm';
 import { Dataset } from '../datasets/dataset.entity';
 import { RecordEntity } from '../records/record.entity';
 import { User } from '../users/user.entity';
+import { QualityTask } from '../quality/quality-task.entity';
+import { QualityReport } from '../quality/quality-report.entity';
+import { QualityIssue } from '../quality/quality-issue.entity';
 import {
   DEFAULT_SEED_PASSWORD,
   DEFAULT_SEED_USERNAME,
   MARKETING_DATASET_NAME,
+  QUALITY_DATASET_NAME,
   SALES_DATASET_NAME,
   marketingRecords,
+  qualityRecords,
   salesRecords,
   seedWithDataSource
 } from './seed-utils';
@@ -20,7 +25,7 @@ describe('seed utilities', () => {
     dataSource = new DataSource({
       type: 'sqlite',
       database: ':memory:',
-      entities: [User, Dataset, RecordEntity],
+      entities: [User, Dataset, RecordEntity, QualityTask, QualityReport, QualityIssue],
       synchronize: true
     });
 
@@ -55,6 +60,7 @@ describe('seed utilities', () => {
   it('rebuilds the demo datasets with stable names and record counts', async () => {
     const datasetRepository = dataSource.getRepository(Dataset);
     const recordRepository = dataSource.getRepository(RecordEntity);
+    const totalRecords = salesRecords.length + marketingRecords.length + qualityRecords.length;
 
     const firstRun = await seedWithDataSource(dataSource);
 
@@ -66,20 +72,31 @@ describe('seed utilities', () => {
       expect.objectContaining({
         name: MARKETING_DATASET_NAME,
         insertedCount: marketingRecords.length
+      }),
+      expect.objectContaining({
+        name: QUALITY_DATASET_NAME,
+        insertedCount: qualityRecords.length
       })
     ]);
-    expect(await datasetRepository.count()).toBe(2);
-    expect(await recordRepository.count()).toBe(salesRecords.length + marketingRecords.length);
+    expect(await datasetRepository.count()).toBe(3);
+    expect(await recordRepository.count()).toBe(totalRecords);
 
     await recordRepository.delete({});
 
     const secondRun = await seedWithDataSource(dataSource);
-    const datasetNames = (await datasetRepository.find()).map((dataset) => dataset.name).sort();
+    const datasetNames = (await datasetRepository.find())
+      .map((dataset) => dataset.name)
+      .sort();
 
     expect(secondRun.datasets[0].insertedCount).toBe(salesRecords.length);
     expect(secondRun.datasets[1].insertedCount).toBe(marketingRecords.length);
-    expect(datasetNames).toEqual([MARKETING_DATASET_NAME, SALES_DATASET_NAME]);
-    expect(await datasetRepository.count()).toBe(2);
-    expect(await recordRepository.count()).toBe(salesRecords.length + marketingRecords.length);
+    expect(secondRun.datasets[2].insertedCount).toBe(qualityRecords.length);
+    expect(datasetNames).toEqual([
+      QUALITY_DATASET_NAME,
+      MARKETING_DATASET_NAME,
+      SALES_DATASET_NAME
+    ]);
+    expect(await datasetRepository.count()).toBe(3);
+    expect(await recordRepository.count()).toBe(totalRecords);
   });
 });

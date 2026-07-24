@@ -20,12 +20,13 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="340">
+        <el-table-column label="操作" width="420">
           <template #default="{ row }">
             <div class="actions-group">
               <el-button link type="primary" @click="goImport(row.id)">导入/录入</el-button>
               <el-button link type="primary" @click="goDashboard(row.id)">仪表盘</el-button>
               <el-button link type="primary" @click="goExplore(row.id)">数据探索</el-button>
+              <el-button link type="warning" @click="goQuality(row.id)">质量巡检</el-button>
               <el-button link type="danger" @click="remove(row.id)">删除</el-button>
             </div>
           </template>
@@ -98,6 +99,7 @@ const remove = async (id: number) => {
 const goImport = (id: number) => router.push(`/app/datasets/${id}/import`);
 const goDashboard = (id: number) => router.push(`/app/datasets/${id}/dashboard`);
 const goExplore = (id: number) => router.push(`/app/datasets/${id}/explore`);
+const goQuality = (id: number) => router.push(`/app/datasets/${id}/quality`);
 </script>
 
 <style scoped>

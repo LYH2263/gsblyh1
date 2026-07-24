@@ -6,9 +6,23 @@
           <div class="actions-group">
             <el-button @click="exportCsv">导出 CSV</el-button>
             <el-button type="primary" @click="goDashboard">返回仪表盘</el-button>
+            <el-button type="warning" plain @click="goQuality">质量巡检</el-button>
           </div>
         </template>
       </PageHeaderBar>
+
+      <el-alert
+        v-if="warningCount > 0"
+        class="quality-alert"
+        type="warning"
+        :closable="false"
+        show-icon
+      >
+        <template #title>
+          最新质量报告中有 <strong>{{ warningCount }}</strong> 条未修复问题，下表对应行已用彩色标签标注。
+          <el-button link type="warning" @click="goQuality">前往质量巡检 →</el-button>
+        </template>
+      </el-alert>
 
       <el-form :inline="true" :model="filters" class="filter-toolbar explore-filter">
         <el-form-item label="分类">
@@ -31,6 +45,28 @@
         <el-table-column prop="region" label="地区" min-width="120" />
         <el-table-column prop="channel" label="渠道" min-width="120" />
         <el-table-column prop="amount" label="金额" min-width="120" />
+        <el-table-column label="质量" width="180">
+          <template #default="{ row }">
+            <div v-if="warningsByRecord[row.id]" class="warning-tags">
+              <el-tooltip
+                v-for="tag in warningsByRecord[row.id]"
+                :key="tag.rule"
+                :content="`${RULE_META[tag.rule].label}：${tag.summary}`"
+                placement="top"
+              >
+                <el-tag
+                  size="small"
+                  effect="plain"
+                  round
+                  :style="{ color: RULE_META[tag.rule].color, borderColor: RULE_META[tag.rule].color }"
+                >
+                  {{ RULE_META[tag.rule].short }}
+                </el-tag>
+              </el-tooltip>
+            </div>
+            <span v-else class="text-ok">—</span>
+          </template>
+        </el-table-column>
       </el-table>
 
       <div class="table-toolbar">
@@ -50,17 +86,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PageHeaderBar from '@/components/ui/PageHeaderBar.vue';
 import SectionCard from '@/components/ui/SectionCard.vue';
 import { useRecordStore } from '@/stores/records';
+import { qualityApi } from '@/api/quality';
+import { RULE_META } from '@/config/qualityRules';
+import type { QualityIssue, QualityRule } from '@/types/models';
 
 const route = useRoute();
 const router = useRouter();
 const recordStore = useRecordStore();
 
 const datasetId = computed(() => Number(route.params.id));
+
+const warnings = ref<QualityIssue[]>([]);
+
+const warningsByRecord = computed<Record<number, { rule: QualityRule; summary: string }[]>>(() => {
+  const map: Record<number, { rule: QualityRule; summary: string }[]> = {};
+  for (const w of warnings.value) {
+    if (!map[w.recordId]) {
+      map[w.recordId] = [];
+    }
+    map[w.recordId].push({ rule: w.rule, summary: w.summary });
+  }
+  return map;
+});
+
+const warningCount = computed(() => warnings.value.length);
 
 const filters = reactive({
   from: (route.query.from as string) || '',
@@ -69,6 +123,18 @@ const filters = reactive({
   region: (route.query.region as string) || '',
   channel: (route.query.channel as string) || ''
 });
+
+const loadWarnings = async () => {
+  if (!datasetId.value) {
+    return;
+  }
+  try {
+    const result = await qualityApi.getWarnings(datasetId.value);
+    warnings.value = result.issues;
+  } catch {
+    warnings.value = [];
+  }
+};
 
 const load = async (page = 1, pageSize = recordStore.filters.pageSize) => {
   if (!datasetId.value) {
@@ -84,6 +150,7 @@ const load = async (page = 1, pageSize = recordStore.filters.pageSize) => {
     page,
     pageSize
   });
+  await loadWarnings();
 };
 
 onMounted(async () => {
@@ -127,11 +194,29 @@ const exportCsv = () => {
 const goDashboard = () => {
   router.push(`/app/datasets/${datasetId.value}/dashboard`);
 };
+
+const goQuality = () => {
+  router.push(`/app/datasets/${datasetId.value}/quality`);
+};
 </script>
 
 <style scoped>
 .explore-filter,
 .explore-table {
   margin-top: var(--space-4);
+}
+
+.quality-alert {
+  margin-top: var(--space-3);
+}
+
+.warning-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.text-ok {
+  color: var(--text-tertiary);
 }
 </style>

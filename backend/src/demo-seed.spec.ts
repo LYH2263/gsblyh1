@@ -8,19 +8,24 @@ import {
   DEFAULT_SEED_PASSWORD,
   DEFAULT_SEED_USERNAME,
   MARKETING_DATASET_NAME,
+  QUALITY_DATASET_NAME,
   SALES_DATASET_NAME,
   marketingRecords,
+  qualityRecords,
   salesRecords
 } from './scripts/seed-utils';
 import { ensureDemoSeededOnBoot, shouldAutoSeedOnBoot } from './demo-seed';
 import { RecordEntity } from './records/record.entity';
 import { User } from './users/user.entity';
+import { QualityTask } from './quality/quality-task.entity';
+import { QualityReport } from './quality/quality-report.entity';
+import { QualityIssue } from './quality/quality-issue.entity';
 
 const createDataSource = (database: string) =>
   new DataSource({
     type: 'sqlite',
     database,
-    entities: [User, Dataset, RecordEntity],
+    entities: [User, Dataset, RecordEntity, QualityTask, QualityReport, QualityIssue],
     synchronize: true
   });
 
@@ -77,9 +82,11 @@ describe('demo seed bootstrap', () => {
         });
         const salesDataset = datasets.find((item) => item.name === SALES_DATASET_NAME);
         const marketingDataset = datasets.find((item) => item.name === MARKETING_DATASET_NAME);
+        const qualityDataset = datasets.find((item) => item.name === QUALITY_DATASET_NAME);
 
         expect(salesDataset).toBeTruthy();
         expect(marketingDataset).toBeTruthy();
+        expect(qualityDataset).toBeTruthy();
         expect(
           await recordRepository.count({
             where: { datasetId: salesDataset!.id }
@@ -90,6 +97,11 @@ describe('demo seed bootstrap', () => {
             where: { datasetId: marketingDataset!.id }
           })
         ).toBe(marketingRecords.length);
+        expect(
+          await recordRepository.count({
+            where: { datasetId: qualityDataset!.id }
+          })
+        ).toBe(qualityRecords.length);
       } finally {
         await dataSource.destroy();
       }
