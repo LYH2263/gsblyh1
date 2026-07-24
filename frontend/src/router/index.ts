@@ -39,6 +39,14 @@ const router = createRouter({
           component: () => import('@/pages/ExplorePage.vue')
         },
         {
+          path: 'datasets/:id/quality',
+          component: () => import('@/pages/QualityPage.vue')
+        },
+        {
+          path: 'quality',
+          component: () => import('@/pages/QualityPage.vue')
+        },
+        {
           path: 'settings',
           component: () => import('@/pages/SettingsPage.vue')
         }

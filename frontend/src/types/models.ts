@@ -53,3 +53,50 @@ export interface PaginatedRecords {
   page: number;
   pageSize: number;
 }
+
+export type InspectionStatus = 'queued' | 'running' | 'done' | 'failed';
+export type IssueRule = 'missing' | 'abnormal_amount' | 'future_date' | 'duplicate';
+
+export interface QualityIssue {
+  recordId: number;
+  rule: IssueRule;
+  summary: string;
+  field?: string;
+}
+
+export interface IssueCounts {
+  missing: number;
+  abnormalAmount: number;
+  futureDate: number;
+  duplicate: number;
+}
+
+export interface InspectionTask {
+  id: number;
+  userId: number;
+  datasetId: number;
+  status: InspectionStatus;
+  errorMessage?: string;
+  reportId?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InspectionReport {
+  id: number;
+  userId: number;
+  datasetId: number;
+  taskId: number;
+  qualityScore: number;
+  totalRecords: number;
+  issueCounts: IssueCounts;
+  issues: QualityIssue[];
+  createdAt: string;
+}
+
+export interface PaginatedIssues {
+  items: QualityIssue[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
