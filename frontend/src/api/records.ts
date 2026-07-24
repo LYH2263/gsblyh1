@@ -17,11 +17,12 @@ export const recordsApi = {
   ) {
     return apiClient.post<never, RecordItem>(`/datasets/${datasetId}/records`, payload);
   },
-  bulkImport(datasetId: number, csvText: string) {
+  bulkImport(datasetId: number, csvText: string, lenient = false) {
     return apiClient.post<never, { insertedCount: number }>(
       `/datasets/${datasetId}/records/bulk`,
       {
-        csvText
+        csvText,
+        lenient
       }
     );
   },

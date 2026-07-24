@@ -41,8 +41,8 @@ export const useRecordStore = defineStore('records', {
       await recordsApi.create(datasetId, payload);
       await this.fetchRecords(datasetId, { page: 1 });
     },
-    async bulkImport(datasetId: number, csvText: string) {
-      const result = await recordsApi.bulkImport(datasetId, csvText);
+    async bulkImport(datasetId: number, csvText: string, lenient = false) {
+      const result = await recordsApi.bulkImport(datasetId, csvText, lenient);
       await this.fetchRecords(datasetId, { page: 1 });
       return result;
     },
